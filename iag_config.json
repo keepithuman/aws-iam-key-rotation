@@ -1,0 +1,90 @@
+{
+  "service_config": {
+    "name": "aws-iam-key-rotation",
+    "description": "Automated AWS IAM access key rotation for keys older than 90 days",
+    "version": "1.0.0",
+    "type": "python-script",
+    "tags": ["aws", "iam", "security", "automation", "key-rotation"],
+    "execution": {
+      "script_path": "rotate_iam_keys.py",
+      "working_directory": "./",
+      "timeout": 300,
+      "environment_variables": {
+        "AWS_DEFAULT_REGION": "us-east-1",
+        "PYTHONPATH": "./"
+      }
+    },
+    "parameters": {
+      "days_threshold": {
+        "type": "integer",
+        "default": 90,
+        "description": "Age threshold in days for key rotation",
+        "min": 1,
+        "max": 365
+      },
+      "dry_run": {
+        "type": "boolean",
+        "default": false,
+        "description": "Perform a dry run without making changes"
+      },
+      "aws_profile": {
+        "type": "string",
+        "default": "",
+        "description": "AWS profile to use (optional)"
+      },
+      "aws_region": {
+        "type": "string",
+        "default": "us-east-1",
+        "description": "AWS region"
+      },
+      "target_user": {
+        "type": "string",
+        "default": "",
+        "description": "Specific user to rotate keys for (optional)"
+      },
+      "cleanup_inactive": {
+        "type": "boolean",
+        "default": false,
+        "description": "Clean up inactive keys older than 30 days"
+      },
+      "output_format": {
+        "type": "string",
+        "default": "json",
+        "enum": ["json", "text"],
+        "description": "Output format for results"
+      }
+    },
+    "outputs": {
+      "execution_results": {
+        "type": "object",
+        "description": "Complete execution results including rotated keys and summary"
+      },
+      "rotated_keys": {
+        "type": "array",
+        "description": "Array of key rotation results"
+      },
+      "summary": {
+        "type": "object",
+        "description": "Summary statistics of the rotation operation"
+      }
+    },
+    "requirements": {
+      "python_version": ">=3.7",
+      "aws_permissions": [
+        "iam:ListUsers",
+        "iam:ListAccessKeys", 
+        "iam:CreateAccessKey",
+        "iam:UpdateAccessKey",
+        "iam:DeleteAccessKey",
+        "iam:GetAccountSummary"
+      ]
+    }
+  },
+  "iag_integration": {
+    "service_type": "python-script",
+    "repository_url": "https://github.com/keepithuman/aws-iam-key-rotation.git",
+    "main_script": "rotate_iam_keys.py",
+    "install_dependencies": "pip install -r requirements.txt",
+    "health_check": "python rotate_iam_keys.py --help"
+  }
+}
